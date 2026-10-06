@@ -27,7 +27,7 @@ Implementación autorizada por el usuario. Los datos y archivos del ejercicio or
 
 ## Progreso
 
-Los diez pasos están implementados, con un commit por funcionalidad y pruebas de regresión separadas. Se verificaron 388 pruebas, tipos y compilación. La topología sintética pasó configuración WRT/DNS/DHCP, instalación WPC300N, asociación Default, CLI, layout, checkpoints/reapertura y resolución DNS con ICMP 4/4.
+Los diez pasos están implementados, con un commit por funcionalidad y pruebas de regresión separadas. Se verificaron 400 pruebas, tipos y compilación. La topología sintética pasó configuración WRT/DNS/DHCP, instalación WPC300N, asociación Default, CLI, layout, checkpoints/reapertura y resolución DNS con ICMP 4/4.
 
 Uso y límites: [docs/integration/mejoras.md](docs/integration/mejoras.md).
 

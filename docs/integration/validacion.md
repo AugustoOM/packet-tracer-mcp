@@ -3,7 +3,7 @@
 Validado localmente el 6 de octubre de 2026 (UTC), con Cisco Packet Tracer 9.0.1, Bun 1.4.2 y una topología sintética. No se incorporaron datos personales ni archivos del ejercicio original.
 
 - Línea de base: 348 pruebas aprobadas y comprobación de tipos sin errores.
-- Resultado final: 388 pruebas aprobadas, comprobación de tipos y compilación del ejecutable sin errores.
+- Resultado final: 400 pruebas aprobadas, comprobación de tipos y compilación del ejecutable sin errores.
 - Transporte nativo: identificador correlacionado, comillas, barras invertidas, saltos de línea, español y caracteres CJK preservados.
 - WRT: modo WAN estático correcto, WAN/LAN leídas, DHCP LAN deshabilitado.
 - Server-PT: direcciones estáticas y DNS configurados; registro A creado y actualizado; pool `serverPool` configurado con rango y opciones coherentes.
