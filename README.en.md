@@ -1,3 +1,5 @@
+> Integration fork: [new tools, behavior and recovery](docs/integration/mejoras.md), [validation](docs/integration/validacion.md), and [plan](plan-de-mejora.md). Each feature has a separate commit.
+
 # packet-tracer-mcp
 
 ![Version](https://img.shields.io/badge/Version-0.1.0-orange?style=flat-square)
