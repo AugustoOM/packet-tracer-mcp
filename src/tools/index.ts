@@ -63,6 +63,8 @@ import { registerEndpointStateTool } from "./endpoint-state.js";
 
 import { registerWirelessRouterTools } from "./wireless-router.js";
 
+import { registerDnsTools } from "./dns.js";
+
 export type { ToolContext, ToolModule } from "./types.js";
 
 export const ALL_TOOLS: readonly ToolModule[] = [
@@ -70,6 +72,7 @@ export const ALL_TOOLS: readonly ToolModule[] = [
   registerPlanReviewTool,
   // Health + catalog
   registerBridgeStatusTool,
+  registerDnsTools,
   registerWirelessRouterTools,
   registerEndpointStateTool,
   registerReadServerDhcpTool,
