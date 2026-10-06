@@ -6,16 +6,16 @@ Implementación autorizada por el usuario. Los datos y archivos del ejercicio or
 
 ## Pasos
 
-- [ ] 1. Ping: distinguir respuestas ICMP válidas, destinos inaccesibles, DNS, resultados parciales y timeout.
-- [ ] 2. CLI: detectar el asistente inicial, avanzar paginación, esperar finalización y devolver errores por comando.
-- [ ] 3. PCs: aceptar respuestas `OK:…`, respetar el puerto DHCP, configurar DNS y consultar el resultado.
-- [ ] 4. WRT300N: modos WAN con nombres, configuración LAN/DHCP y lectura posterior.
-- [ ] 5. DHCP: preservar/configurar `serverPool`, detectar solapamientos y consultar pools/concesiones.
-- [ ] 6. DNS: habilitar el servicio, administrar registros A y comprobar resolución desde un cliente.
-- [ ] 7. WiFi: instalar/verificar WPC300N y consultar asociación; ofrecer el procedimiento Default comprobado, sin afirmar soporte de perfiles arbitrarios sin pruebas.
-- [ ] 8. Bridge: correlacionar peticiones y respuestas, descartar resultados tardíos y probar caracteres especiales.
-- [ ] 9. Layout: respetar switches en cascada y clientes asociados a AP.
-- [ ] 10. Recuperación: checkpoints `.pkt` numerados, registro de guardados confirmados y comprobación opcional de persistencia al reabrir.
+- [x] 1. Ping: distinguir respuestas ICMP válidas, destinos inaccesibles, DNS, resultados parciales y timeout.
+- [x] 2. CLI: detectar el asistente inicial, avanzar paginación, esperar finalización y devolver errores por comando.
+- [x] 3. PCs: aceptar respuestas `OK:…`, respetar el puerto DHCP, configurar DNS y consultar el resultado.
+- [x] 4. WRT300N: modos WAN con nombres, configuración LAN/DHCP y lectura posterior.
+- [x] 5. DHCP: preservar/configurar `serverPool`, detectar solapamientos y consultar pools/concesiones.
+- [x] 6. DNS: habilitar el servicio, administrar registros A y comprobar resolución desde un cliente.
+- [x] 7. WiFi: instalar/verificar WPC300N y consultar asociación; ofrecer el procedimiento Default comprobado, sin afirmar soporte de perfiles arbitrarios sin pruebas.
+- [x] 8. Bridge: correlacionar peticiones y respuestas, descartar resultados tardíos y probar caracteres especiales.
+- [x] 9. Layout: respetar switches en cascada y clientes asociados a AP.
+- [x] 10. Recuperación: checkpoints `.pkt` numerados, registro de guardados confirmados y comprobación opcional de persistencia al reabrir.
 
 ## Validación y entrega
 
@@ -27,4 +27,8 @@ Implementación autorizada por el usuario. Los datos y archivos del ejercicio or
 
 ## Progreso
 
-Fork creado, clonado en la carpeta solicitada y dependencias instaladas. Implementación pendiente.
+Los diez pasos están implementados, con un commit por funcionalidad y pruebas de regresión separadas. Se verificaron 388 pruebas, tipos y compilación. La topología sintética pasó configuración WRT/DNS/DHCP, instalación WPC300N, asociación Default, CLI, layout, checkpoints/reapertura y resolución DNS con ICMP 4/4.
+
+Uso y límites: [docs/integration/mejoras.md](docs/integration/mejoras.md).
+
+Evidencia: [docs/integration/validacion.md](docs/integration/validacion.md).

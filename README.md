@@ -1,3 +1,5 @@
+> Fork de integración: [mejoras, herramientas nuevas y recuperación](docs/integration/mejoras.md), [validación](docs/integration/validacion.md) y [plan](plan-de-mejora.md). La historia conserva un commit por funcionalidad.
+
 # packet-tracer-mcp
 
 ![Version](https://img.shields.io/badge/Version-0.1.0-orange?style=flat-square)
