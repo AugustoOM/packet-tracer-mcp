@@ -59,6 +59,8 @@ import { registerPlanReviewTool } from "./plan-review.js";
 
 import { registerReadServerDhcpTool } from "./read-server-dhcp.js";
 
+import { registerEndpointStateTool } from "./endpoint-state.js";
+
 export type { ToolContext, ToolModule } from "./types.js";
 
 export const ALL_TOOLS: readonly ToolModule[] = [
@@ -66,6 +68,7 @@ export const ALL_TOOLS: readonly ToolModule[] = [
   registerPlanReviewTool,
   // Health + catalog
   registerBridgeStatusTool,
+  registerEndpointStateTool,
   registerReadServerDhcpTool,
   registerListDevicesTool,
   registerListModulesTool,

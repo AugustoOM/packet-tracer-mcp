@@ -405,6 +405,7 @@ export interface EndpointStaticIp {
   readonly ip: string;
   readonly mask: string;
   readonly gateway?: string;
+  readonly dns?: string;
 }
 
 export function setEndpointStaticIpJs(args: EndpointStaticIp): string {
@@ -416,17 +417,18 @@ export function setEndpointStaticIpJs(args: EndpointStaticIp): string {
     `(function(){` +
       `var d=${NET}.getDevice(${jsStr(args.device)});` +
       `if(!d)return "ERR:not_found";` +
-      `d.setDhcpFlag(false);` +
       `var port=d.getPort(${jsStr(args.port)});` +
       `if(!port)return "ERR:port_not_found";` +
+      `d.setDhcpFlag(false);port.setDhcpClientFlag(false);` +
       `port.setIpSubnetMask(${jsStr(args.ip)},${jsStr(args.mask)});` +
       gwLine +
+      (args.dns !== undefined ? `port.setDnsServerIp(${jsStr(args.dns)});` : "") +
       `return "OK";` +
     `})()`,
   );
 }
 
-export function setEndpointDhcpJs(deviceName: string): string {
+export function setEndpointDhcpJs(deviceName: string, portName?: string): string {
   return withLabel(
     `DHCP en ${deviceName}`,
     `(function(){` +
@@ -443,6 +445,7 @@ export function setEndpointDhcpJs(deviceName: string): string {
         `for(var i=0;i<n;i++){` +
           `var p=null;try{p=d.getPortAt(i);}catch(e){}` +
           `if(!p)continue;` +
+          `if(String(p.getName()).toLowerCase()==="bluetooth")continue;` +
           `if(!first)first=p;` +
           `var iswl=false;try{iswl=!!p.isWirelessPort();}catch(e){}` +
           `if(iswl&&!wireless)wireless=p;` +
@@ -451,14 +454,10 @@ export function setEndpointDhcpJs(deviceName: string): string {
         `}` +
       `}catch(e){}` +
       `port=linked||wireless||first;` +
-      `try{` +
-        `if(typeof configurePcIp==="function"){` +
-          `configurePcIp(${jsStr(deviceName)},true,"","","");` +
-          `method="configurePcIp";` +
-        `}` +
-      `}catch(e){}` +
-      `try{d.setDhcpFlag(true);}catch(e){}` +
-      `try{if(port&&typeof port.setDhcpClientFlag==="function"){port.setDhcpClientFlag(true);method=method+"+portDhcp("+(port.getName&&port.getName()||"?")+")";}}catch(e){}` +
+      (portName ? `port=d.getPort(${jsStr(portName)});if(!port)return "ERR:port_not_found";` : "") +
+      `if(!port)return "ERR:no_network_port";` +
+      `d.setDhcpFlag(true);` +
+      `port.setDhcpClientFlag(true);method=method+"+portDhcp("+port.getName()+")";` +
       `try{d.getCommandLine().enterCommand("ipconfig /renew");method=method+"+renew";}catch(e){}` +
       `return "OK:"+method;` +
     `})()`
