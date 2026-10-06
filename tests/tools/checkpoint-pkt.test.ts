@@ -1,6 +1,6 @@
 import { expect, test, describe } from "bun:test";
-import type { Bridge } from "../src/bridge/http-bridge.js";
-import { nextCheckpointPath, confirmedSave } from "../src/tools/checkpoint-pkt.js";
+import type { Bridge } from "../../src/bridge/http-bridge.js";
+import { nextCheckpointPath, confirmedSave } from "../../src/tools/checkpoint-pkt.js";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

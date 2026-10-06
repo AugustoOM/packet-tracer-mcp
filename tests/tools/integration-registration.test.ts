@@ -2,8 +2,8 @@ import { expect, test } from "bun:test";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import type { Bridge } from "../src/bridge/http-bridge.js";
-import { ALL_TOOLS } from "../src/tools/index.js";
+import type { Bridge } from "../../src/bridge/http-bridge.js";
+import { ALL_TOOLS } from "../../src/tools/index.js";
 async function connected(bridge:Bridge){
   const server=new McpServer({name:"integration-test",version:"1"});for(const register of ALL_TOOLS)register({bridge,server});
   const [a,b]=InMemoryTransport.createLinkedPair();await server.connect(a);const client=new Client({name:"tests",version:"1"});await client.connect(b);return {server,client};

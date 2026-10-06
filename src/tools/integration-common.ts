@@ -14,3 +14,9 @@ export function makeGuard(bridge: Bridge) {
     try { return textResult(await action()); } catch(e) { return errorResult(String(e)); }
   };
 }
+
+export function decodeNativeReply(raw: string): unknown {
+  if (/^(ERR|ERROR):/.test(raw)) throw new Error(raw);
+  if (/^OK(?::|$)/.test(raw)) return { status: "ok", detail: raw };
+  return JSON.parse(raw) as unknown;
+}

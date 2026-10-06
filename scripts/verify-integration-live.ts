@@ -9,6 +9,7 @@ import {Client} from "@modelcontextprotocol/sdk/client/index.js";
 import {StreamableHTTPClientTransport} from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import {Bridge} from "../src/bridge/http-bridge.js";
 import {readDhcpJs,readDnsJs,readEndpointJs,readWirelessJs,readWrtJs} from "../src/ipc/integration.js";
+function report(value: string) { process.stdout.write(value+"\n"); }
 const client=new Client({name:"fork-readonly-validation",version:"1.0"});
 await client.connect(new StreamableHTTPClientTransport(new URL(process.env.UPSTREAM_MCP_URL??"http://127.0.0.1:39001/mcp")));
 const bridge=new Bridge(54322);bridge.start();let active=true;
@@ -27,7 +28,7 @@ const worker=(async()=>{while(active){const code=await (await fetch("http://127.
 try{
   const echo=await bridge.sendAndWait(JSON.stringify("quotes ' \" backslash \\ newline\n español 漢字"));
   if(echo!=="quotes ' \" backslash \\ newline\n español 漢字")throw new Error(`Transport echo mismatch: ${echo}`);
-  console.log("PASS: correlated bridge, special characters and Unicode on native PT");
+  report("PASS: correlated bridge, special characters and Unicode on native PT");
   const raw=await bridge.sendAndWait('(function(){var n=ipc.network(),out=[];for(var i=0;i<n.getDeviceCount();i++){var d=n.getDeviceAt(i);out.push({name:d.getName(),model:String(d.getModel())});}return JSON.stringify(out);})()');
   const devices=(JSON.parse(raw??"[]") as {name:string;model:string}[]).filter(d=>d.model!=="Power Distribution Device");
   if(process.argv.includes("--fixture") || process.argv.includes("--resume-fixture")){
@@ -37,7 +38,7 @@ try{
     const handlers=new Map<string,{schema:z.ZodObject;run:(a:unknown)=>Promise<{isError?:boolean;content:{type:string;text?:string}[]}>}>();
     const server={tool:(name:string,_description:string,schema:z.ZodRawShape,run:never)=>handlers.set(name,{schema:z.object(schema),run})} as unknown as McpServer;
     for(const register of ALL_TOOLS)register({bridge,server});
-    const invoke=async(name:string,args:unknown)=>{const t=handlers.get(name)!;const r=await t.run(t.schema.parse(args));const value=r.content.map(c=>c.text??"").join("\n");if(r.isError)throw new Error(`${name}: ${value}`);console.log(`PASS: ${name}`);if(name==="pt_verify_dns")console.log(value);return value;};
+    const invoke=async(name:string,args:unknown)=>{const t=handlers.get(name)!;const r=await t.run(t.schema.parse(args));const value=r.content.map(c=>c.text??"").join("\n");if(r.isError)throw new Error(`${name}: ${value}`);report(`PASS: ${name}`);if(name==="pt_verify_dns")report(value);return value;};
     const directory=process.env.PT_FIXTURE_DIR??"/private/tmp/packet-tracer-mcp-integration-fixture";mkdirSync(directory,{recursive:true});
     if(!resume){
     for(const [name,model] of [["TestWRT","wrt300n"],["TestSW1","2960-24TT"],["TestSW2","2960-24TT"],["TestAP","ap-n"],["TestDNS","Server-PT"],["TestDHCP","Server-PT"],["TestLaptop","Laptop-PT"]])await invoke("pt_add_device",{name,model});
@@ -63,13 +64,13 @@ try{
     await invoke("pt_latest_checkpoint",{directory});
     const until=Date.now()+45000;let ping;do{ping=JSON.parse(await invoke("pt_verify_dns",{device:"TestLaptop",hostname:"test.example"}));if(ping.resolved&&ping.icmp.successRate===100&&ping.icmp.complete)break;await Bun.sleep(1000);}while(Date.now()<until);
     if(!ping?.resolved||ping.icmp.successRate!==100||!ping.icmp.complete)throw new Error("DNS/ICMP verification failed after convergence.");
-    console.log("PASS: fixture configuration, association, CLI, layout, DNS resolution and save/reopen persistence");
+    report("PASS: fixture configuration, association, CLI, layout, DNS resolution and save/reopen persistence");
   }
-  if(process.argv.includes("--verify-connectivity")){console.log(await bridge.sendAndWait(readWirelessJs("TestLaptop")));console.log(JSON.stringify(await runPing(bridge,"TestLaptop","test.example")));}
+  if(process.argv.includes("--verify-connectivity")){report(await bridge.sendAndWait(readWirelessJs("TestLaptop")));report(JSON.stringify(await runPing(bridge,"TestLaptop","test.example")));}
   let checked=0;
   for(const d of devices){
     const probes=/WRT/i.test(d.model)?[readWrtJs(d.name)]:/Server/i.test(d.model)?[readDnsJs(d.name),readDhcpJs(d.name,"FastEthernet0",true)]:/Laptop|Notebook/i.test(d.model)?[readWirelessJs(d.name),readEndpointJs(d.name)]:[];
     for(const code of probes){const reply=await bridge.sendAndWait(code);if(!reply||/^(ERR|ERROR):/.test(reply))throw new Error(`Native readback failed (${d.model}): ${reply}`);JSON.parse(reply);checked++;}
   }
-  console.log(`PASS: ${checked} native readbacks; no topology modified`);
+  report(`PASS: ${checked} native readbacks; no topology modified`);
 }finally{active=false;await worker;bridge.stop();await client.close();}

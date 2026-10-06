@@ -9,6 +9,7 @@ import { fileSaveAsNoPromptJs, fileOpenJs, fileNewJs } from "../ipc/files.js";
 import { requireConnectedBridge, textResult, errorResult } from "./helpers.js";
 import { linkRegistry } from "../canvas/link-registry.js";
 const locks=new WeakMap<Bridge,Promise<unknown>>();
+
 export function nextCheckpointPath(directory:string,name:string):string {
   const escaped=name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
   const pattern=new RegExp(`^${escaped}-(\\d+)\\.pkt$`);
@@ -16,6 +17,7 @@ export function nextCheckpointPath(directory:string,name:string):string {
   for(const file of readdirSync(directory)){const match=pattern.exec(file);if(match)next=Math.max(next,Number(match[1])+1);}
   return join(directory,`${name}-${String(next).padStart(4,"0")}.pkt`);
 }
+
 export async function confirmedSave(bridge:Bridge,path:string):Promise<{path:string;bytes:number;sha256:string;confirmedAt:string}> {
   if(existsSync(path))throw new Error("Checkpoint already exists; refusing overwrite.");
   const sent=await nativeCall(bridge,fileSaveAsNoPromptJs(path));if(sent!=="OK")throw new Error(`Save not dispatched: ${sent}`);
@@ -28,12 +30,16 @@ export async function confirmedSave(bridge:Bridge,path:string):Promise<{path:str
   }
   throw new Error(`Save not confirmed on shared filesystem: ${path}`);
 }
-/** Persistent configuration only: exclude DHCP client leases and radio transient state. */
+
 export function persistenceStateJs():string {
   return `(function(){var net=ipc.network(),devices=[];for(var i=0;i<net.getDeviceCount();i++){var d=net.getDeviceAt(i);if(d.getModel()==="Power Distribution Device")continue;var v={name:d.getName(),model:d.getModel(),ports:[]};for(var j=0;j<d.getPortCount();j++){var p=d.getPortAt(j);try{var dhcp=p.isDhcpClientOn();v.ports.push({name:p.getName(),dhcp:dhcp,ip:dhcp?null:String(p.getIpAddress()),mask:dhcp?null:String(p.getSubnetMask())});}catch(e){}}try{v.wanMode=d.getInternetConnectionType();v.gateway=String(d.getDefaultGateway());}catch(e){}try{var dns=d.getProcess("DnsServerProcess");if(dns){v.dns={enabled:dns.isEnabled(),records:[]};for(var k=0;k<dns.getSizeOfNameServerDb();k++){var r=dns.getRrFromNameServerDbAt(k);v.dns.records.push({name:String(r.name),ip:String(r.ipAddress),type:Number(r.type)});}v.dns.records.sort(function(a,b){return JSON.stringify(a).localeCompare(JSON.stringify(b));});}}catch(e){v.dnsError=String(e);}try{var mp=d.getProcess("DhcpServerMainProcess");if(mp){var sp=mp.getDhcpServerProcessByPortName("FastEthernet0");v.dhcp={enabled:sp.isEnable(),pools:[]};for(var k=0;k<sp.getPoolCount();k++){var p=sp.getPoolAt(k);v.dhcp.pools.push({name:p.getDhcpPoolName(),network:String(p.getNetworkAddress()),mask:String(p.getSubnetMask()),start:String(p.getStartIp()),end:String(p.getEndIp()),gw:String(p.getDefaultRouter()),dns:String(p.getDnsServerIp()),max:p.getMaxUsers()});}v.dhcp.pools.sort(function(a,b){return a.name.localeCompare(b.name);});}}catch(e){v.dhcpError=String(e);}try{var wr=d.getProcess("WirelessServerProcess");if(wr)v.ssid=String(wr.getSsid());}catch(e){}try{if(typeof d.getInternetConnectionType==="function")v.lanDhcp=d.getProcess("DhcpServerProcess").isEnable();}catch(e){v.wrtDhcpError=String(e);}v.ports.sort(function(a,b){return a.name.localeCompare(b.name);});devices.push(v);}devices.sort(function(a,b){return a.name.localeCompare(b.name);});return JSON.stringify(devices);})()`;
 }
-export const registerCheckpointTools:ToolModule=({bridge,server})=>{
-  server.tool("pt_checkpoint_pkt","Create a numbered .pkt checkpoint and atomically record confirmed size/SHA-256 in latest-checkpoint.json. verifyReopen=true replaces the active canvas with this checkpoint and compares persistent addresses, WRT, DNS and DHCP. Shared filesystem required.",{directory:z.string().min(1),name:z.string().regex(/^[a-zA-Z0-9_-]+$/).default("checkpoint"),verifyReopen:z.boolean().default(false)},async a=>{
+
+export const InputSchema = {directory:z.string().min(1),name:z.string().regex(/^[a-zA-Z0-9_-]+$/).default("checkpoint"),verifyReopen:z.boolean().default(false)};
+export { fileSaveAsNoPromptJs as buildJs } from "../ipc/files.js";
+export { decodeNativeReply as decodeReply } from "./integration-common.js";
+export const registerCheckpointPktTool: ToolModule = ({bridge,server}) => {
+server.tool("pt_checkpoint_pkt", "Create a numbered .pkt checkpoint and atomically record confirmed size/SHA-256 in latest-checkpoint.json. verifyReopen=true replaces the active canvas with this checkpoint and compares persistent addresses, WRT, DNS and DHCP. Shared filesystem required.", InputSchema, async a=>{
     const blocked=requireConnectedBridge(bridge);if(blocked)return blocked;
     if(!isAbsolute(a.directory))return errorResult("Checkpoint directory must be absolute.");
     const previous=locks.get(bridge)??Promise.resolve();
@@ -57,8 +63,5 @@ export const registerCheckpointTools:ToolModule=({bridge,server})=>{
       return {...saved,persistenceVerified:a.verifyReopen};
     });locks.set(bridge,next);
     try{return textResult(JSON.stringify(await next,null,2));}catch(e){return errorResult(String(e));}finally{if(locks.get(bridge)===next)locks.delete(bridge);}
-  });
-  server.tool("pt_latest_checkpoint","Read and verify the last confirmed checkpoint, without modifying Packet Tracer.",{directory:z.string().min(1)},async a=>{
-    try{if(!isAbsolute(a.directory))throw new Error("Directory must be absolute.");const saved=JSON.parse(readFileSync(join(a.directory,"latest-checkpoint.json"),"utf8"));const bytes=readFileSync(saved.path);if(bytes.length!==saved.bytes||createHash("sha256").update(bytes).digest("hex")!==saved.sha256)throw new Error("Checkpoint checksum/size mismatch.");return textResult(JSON.stringify(saved));}catch(e){return errorResult(String(e));}
   });
 };
