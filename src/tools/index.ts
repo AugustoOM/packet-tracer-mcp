@@ -57,6 +57,8 @@ import { registerConfigureServerDhcpTool } from "./configure-server-dhcp.js";
 import { registerConfigureSubinterfaceTool } from "./configure-subinterface.js";
 import { registerPlanReviewTool } from "./plan-review.js";
 
+import { registerReadServerDhcpTool } from "./read-server-dhcp.js";
+
 export type { ToolContext, ToolModule } from "./types.js";
 
 export const ALL_TOOLS: readonly ToolModule[] = [
@@ -64,6 +66,7 @@ export const ALL_TOOLS: readonly ToolModule[] = [
   registerPlanReviewTool,
   // Health + catalog
   registerBridgeStatusTool,
+  registerReadServerDhcpTool,
   registerListDevicesTool,
   registerListModulesTool,
   registerListRecipesTool,
