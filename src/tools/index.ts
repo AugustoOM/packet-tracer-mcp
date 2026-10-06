@@ -67,6 +67,8 @@ import { registerDnsTools } from "./dns.js";
 
 import { registerWirelessClientTools } from "./wireless-client.js";
 
+import { registerCheckpointTools } from "./checkpoint-pkt.js";
+
 export type { ToolContext, ToolModule } from "./types.js";
 
 export const ALL_TOOLS: readonly ToolModule[] = [
@@ -74,6 +76,7 @@ export const ALL_TOOLS: readonly ToolModule[] = [
   registerPlanReviewTool,
   // Health + catalog
   registerBridgeStatusTool,
+  registerCheckpointTools,
   registerWirelessClientTools,
   registerDnsTools,
   registerWirelessRouterTools,
